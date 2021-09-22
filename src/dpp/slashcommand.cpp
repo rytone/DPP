@@ -28,7 +28,7 @@ namespace dpp {
 
 using json = nlohmann::json;
 
-slashcommand::slashcommand() : managed(), default_permission(true), type(ctxm_none) {
+slashcommand::slashcommand() : managed(), default_permission(true), type(ctxm_chat_input) {
 }
 
 slashcommand::~slashcommand() {
@@ -346,7 +346,7 @@ interaction_response::~interaction_response() {
 	delete msg;
 }
 
-interaction_response::interaction_response(interaction_response_type t, const message& m) : interaction_response() {
+interaction_response::interaction_response(interaction_response_type t, const struct message& m) : interaction_response() {
 	type = t;
 	*msg = m;
 }
