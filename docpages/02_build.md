@@ -5,7 +5,7 @@ The way D++ is built varies from system to system. Please follow the guides belo
 * \subpage buildlinux "Building on Linux"
 * \subpage buildwindows "Building on Windows"
 * \subpage buildosx "Building on OSX"
-* \subpage buildcmake "Building with CMake"
+* \subpage buildfreebsd "Building on FreeBSD"
 
 \page buildlinux Building on Linux
 
@@ -61,9 +61,7 @@ Of course, this is just a proof of concept - you should really use a more robust
 
 To build on windows follow these steps *exactly*. The build process depends on specific libraries being installed on your system in specific locations.
 
-\note You should not need to build a copy of the library for windows - DLL and LIB files for Windows and visual studio 2019 64-bit are be provided in the github version releases. Unless you wish to submit fixes and enhancements to the library itself (or are running on 32 bit windows) you may find it easier to use these releases instead.
-
-__Instructions here are subject to change!__
+\note You should not need to build a copy of the library for windows - DLL and LIB files for Windows and visual studio 2019 are be provided in the github version releases. Unless you wish to submit fixes and enhancements to the library itself, you may find it easier to use these releases instead.
 
 1. Make sure you have Visual Studio 2019. Community, Professional or Enterprise work fine. You do **NOT** want to use *Visual Studio Code* for this. You can [download the correct version here](https://visualstudio.microsoft.com/downloads/).
 2. Check out the DPP project source using git
@@ -147,79 +145,61 @@ Of course, this is just a proof of concept - you should really use a more robust
 
 **Have fun!**
 
+\page buildfreebsd Building on FreeBSD
 
-\page buildcmake Building with CMake
-# Building with CMake
+# Building on FreeBSD
 
 ## 1. Toolchain
-Before compiling, you will need to install `cmake` on your system.
-To be sure that `cmake` is installed, you can type the following command:
+This project uses CMake. Install it with `pkg install cmake`
 
-    $ cmake --version
-    cmake version 3.20.4
+## 2. Install External Dependencies
+Your FreeBSD base system should have all the required dependencies installed by default.
 
+For voice support, additional dependencies are required
 
-## 2. Create a CMake project
+    pkg install libsodium opus pkgconf
 
-In an empty directory, create different directories and files like below:
+## 3. Build Source Code
+Download the source code via Github or get the archive from the releases. Then navigate to the root directory of the project and run the commands below.
 
-    - your_project/
-        |-- libs/
-        |-- src/
-            |-- main.cpp
-        |-- CMakeLists.txt
+    mkdir build
+    cd build
+    cmake ..
+    make -j8
+    
+Replace the number after -j with a number suitable for your setup, usually the same as the number of cores on your machine. `cmake` will fetch any dependencies that are required for you and ensure they are compiled alongside the library.
 
+## 4. Optional: Run test cases
 
-In the `libs/` directory, clone the sources with: `git clone https://github.com/brainboxdotcc/DPP.git`
+run `./test` for unit test cases. You will need to create a `config.json` file in the directory above the executable file with a valid bot token in it. See the example file `config.example.json` for an example of the correct format.
 
-## 3. Configure CMake
+## 5. Install globally
 
-Here is an example of a CMake configuration, adapt it according to your needs:
+    make install
 
-~~~~~~~~~~~~~~{.cmake}
-# minimum CMake version required
-cmake_minimum_required(VERSION 3.15)
-# Project name, version and description
-project(discord-bot VERSION 1.0 DESCRIPTION "A discord bot")
+## 6. Installation to a different directory
 
-# Add DPP as dependency
-add_subdirectory(libs/DPP)
+If you want to install the library, its dependencies and header files to a different directory, specify this directory when running `cmake`:
 
-# Create an executable
-add_executable(${PROJECT_NAME}
-    src/main.cpp
-    # your others files...
-)
+    cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
 
-# Linking libraries
-target_link_libraries(${PROJECT_NAME}
-    dpp
-    spdlog # if you need a logger. Don't forget to clone sources
-           # in the `libs/` directory
-)
+Then once the build is complete, run `make install` to install to the location you specified.
 
-# Specify includes
-target_include_directories(${PROJECT_NAME} PRIVATE
-    libs/DPP/include
-    libs/spdlog/include # Like before, if you need spdlog
-)
+## 7. Using the library
 
-# Set C++ version
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17 # or 20 if you want something more recent
-    CXX_STANDARD_REQUIRED ON
-)
-~~~~~~~~~~~~~~
+Once installed, you can make use of the library in standalone programs simply by including it and linking to it:
 
-Your project directory should look like this:
+    clang++ -std=c++17 -ldpp mydppbot.cpp -o dppbot
 
-    - your_project/
-        |-- libs/
-            |-- DPP
-            |-- spdlog # again, only if you need it
-        |-- src/
-            |-- main.cpp
-        |-- CMakeLists.txt
+The important flags in this command-line are:
 
+ * `-std=c++17` - Required to compile the headers
+ * `-ldpp` - Link to libdpp.dylib
+ * `mydppbot.cpp` - Your source code
+ * `dppbot` - The name of the executable to make
+
+Of course, this is just a proof of concept - you should really use a more robust build system like [`cmake`](@ref buildcmake).
 
 **Have fun!**
+
+

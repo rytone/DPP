@@ -114,6 +114,9 @@ commandhandler& commandhandler::add_command(const std::string &command, const pa
 				case pt_channel:
 					cot = co_channel;
 				break;
+				case pt_double:
+					cot = co_number;
+				break;
 			}
 
 			command_option opt(cot, parameter.first, parameter.second.description, !parameter.second.optional);
@@ -243,10 +246,17 @@ void commandhandler::route(const class dpp::message& msg)
 					}
 					break;
 					case pt_integer: {
-						int32_t x = 0;
+						int64_t x = 0;
 						ss >> x;
 						param = x;
 					}
+					break;
+					case pt_double: {
+						double x = 0;
+						ss >> x;
+						param = x;
+					}
+					break;
 					case pt_boolean: {
 						std::string x;
 						bool y = false;
@@ -360,12 +370,16 @@ void commandhandler::route(const class interaction_create_t & event)
 				}
 				break;
 				case pt_integer: {
-					int32_t i = std::get<int32_t>(slash_parameter);
+					int64_t i = std::get<int64_t>(slash_parameter);
 					param = i;
 				}
 				break;
 				case pt_boolean: {
 					bool b = std::get<bool>(slash_parameter);
+					param = b;
+				}
+				case pt_double: {
+					double b = std::get<double>(slash_parameter);
 					param = b;
 				}
 				break;
